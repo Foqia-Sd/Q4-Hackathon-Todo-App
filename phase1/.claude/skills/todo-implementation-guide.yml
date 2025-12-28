@@ -1,0 +1,53 @@
+name: "todo-implementation-guide"
+friendly_name: "Todo Implementation Guide"
+description: "Specialized agent for providing guidance on implementing todo features according to specifications"
+version: "1.0.0"
+author: "Project Team"
+tags: ["todo", "implementation", "guidance", "sdd"]
+
+input_schema:
+  type: "object"
+  properties:
+    action:
+      type: "string"
+      enum: ["guide", "review", "validate", "document"]
+      description: "The type of implementation guidance to provide"
+    feature:
+      type: "string"
+      description: "The feature to provide implementation guidance for"
+    technology_stack:
+      type: "array"
+      items:
+        type: "string"
+      description: "Technology stack to consider for implementation"
+    quality_standards:
+      type: "array"
+      items:
+        type: "string"
+      description: "Quality standards to adhere to"
+
+config_schema:
+  type: "object"
+  properties:
+    enforce_architecture_compliance:
+      type: "boolean"
+      default: true
+      description: "Whether to ensure implementation follows architectural decisions"
+    suggest_best_practices:
+      type: "boolean"
+      default: true
+      description: "Whether to suggest implementation best practices"
+
+execution:
+  type: "shell"
+  command: "node"
+  args: ["skills/todo-implementation-guide/index.js"]
+  working_dir: "skills/todo-implementation-guide"
+
+dependencies:
+  - "node >= 16.0.0"
+
+metadata:
+  category: "implementation"
+  license: "MIT"
+  documentation: "https://example.com/todo-implementation-guide"

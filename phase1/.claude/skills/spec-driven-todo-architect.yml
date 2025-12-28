@@ -1,0 +1,42 @@
+name: "spec-driven-todo-architect"
+friendly_name: "Spec-Driven Todo Architect"
+description: "Main agent for managing and architecting todo-related tasks using a specification-driven approach"
+version: "1.0.0"
+author: "Project Team"
+tags: ["todo", "spec", "architecture", "sdd"]
+
+input_schema:
+  type: "object"
+  properties:
+    action:
+      type: "string"
+      enum: ["specify", "plan", "manage", "implement"]
+      description: "The type of action to perform"
+    feature:
+      type: "string"
+      description: "The feature to work on"
+    context:
+      type: "string"
+      description: "Additional context for the operation"
+
+config_schema:
+  type: "object"
+  properties:
+    sdd_principles:
+      type: "boolean"
+      default: true
+      description: "Whether to enforce Spec-Driven Development principles"
+
+execution:
+  type: "shell"
+  command: "node"
+  args: ["skills/spec-driven-todo-architect/index.js"]
+  working_dir: "skills/spec-driven-todo-architect"
+
+dependencies:
+  - "node >= 16.0.0"
+
+metadata:
+  category: "project-management"
+  license: "MIT"
+  documentation: "https://example.com/spec-driven-todo-architect"

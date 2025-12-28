@@ -1,0 +1,53 @@
+name: "todo-architecture-planner"
+friendly_name: "Todo Architecture Planner"
+description: "Specialized agent for planning architecture for todo systems following SDD principles"
+version: "1.0.0"
+author: "Project Team"
+tags: ["todo", "architecture", "planning", "sdd"]
+
+input_schema:
+  type: "object"
+  properties:
+    action:
+      type: "string"
+      enum: ["design", "evaluate", "document", "review"]
+      description: "The type of architectural action to perform"
+    feature:
+      type: "string"
+      description: "The feature to design architecture for"
+    constraints:
+      type: "array"
+      items:
+        type: "string"
+      description: "Architecture constraints to consider"
+    output_format:
+      type: "string"
+      enum: ["markdown", "diagram", "json"]
+      default: "markdown"
+      description: "Format for the architecture output"
+
+config_schema:
+  type: "object"
+  properties:
+    generate_diagrams:
+      type: "boolean"
+      default: true
+      description: "Whether to generate architectural diagrams"
+    evaluate_tradeoffs:
+      type: "boolean"
+      default: true
+      description: "Whether to evaluate technical trade-offs"
+
+execution:
+  type: "shell"
+  command: "node"
+  args: ["skills/todo-architecture-planner/index.js"]
+  working_dir: "skills/todo-architecture-planner"
+
+dependencies:
+  - "node >= 16.0.0"
+
+metadata:
+  category: "architecture"
+  license: "MIT"
+  documentation: "https://example.com/todo-architecture-planner"

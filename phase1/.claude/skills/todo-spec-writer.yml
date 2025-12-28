@@ -1,0 +1,51 @@
+name: "todo-spec-writer"
+friendly_name: "Todo Spec Writer"
+description: "Specialized agent for creating and refining specifications for todo-related features"
+version: "1.0.0"
+author: "Project Team"
+tags: ["todo", "spec", "sdd", "documentation"]
+
+input_schema:
+  type: "object"
+  properties:
+    action:
+      type: "string"
+      enum: ["create", "refine", "validate", "review"]
+      description: "The type of specification action to perform"
+    feature:
+      type: "string"
+      description: "The feature to create specifications for"
+    requirements:
+      type: "string"
+      description: "Requirements to be included in the specification"
+    output_format:
+      type: "string"
+      enum: ["markdown", "json", "yaml"]
+      default: "markdown"
+      description: "Format for the specification output"
+
+config_schema:
+  type: "object"
+  properties:
+    enforce_testability:
+      type: "boolean"
+      default: true
+      description: "Whether to ensure specifications are testable"
+    include_acceptance_criteria:
+      type: "boolean"
+      default: true
+      description: "Whether to include acceptance criteria in specs"
+
+execution:
+  type: "shell"
+  command: "node"
+  args: ["skills/todo-spec-writer/index.js"]
+  working_dir: "skills/todo-spec-writer"
+
+dependencies:
+  - "node >= 16.0.0"
+
+metadata:
+  category: "specification"
+  license: "MIT"
+  documentation: "https://example.com/todo-spec-writer"

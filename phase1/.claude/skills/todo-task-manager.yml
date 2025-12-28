@@ -1,0 +1,51 @@
+name: "todo-task-manager"
+friendly_name: "Todo Task Manager"
+description: "Specialized agent for breaking down specifications into actionable tasks and managing their execution"
+version: "1.0.0"
+author: "Project Team"
+tags: ["todo", "task", "management", "sdd"]
+
+input_schema:
+  type: "object"
+  properties:
+    action:
+      type: "string"
+      enum: ["breakdown", "prioritize", "track", "report"]
+      description: "The type of task management action to perform"
+    specification:
+      type: "string"
+      description: "The specification to break down into tasks"
+    priority:
+      type: "string"
+      enum: ["high", "medium", "low"]
+      default: "medium"
+      description: "Priority level for tasks"
+    assignee:
+      type: "string"
+      description: "Person or team assigned to tasks"
+
+config_schema:
+  type: "object"
+  properties:
+    auto_generate_test_cases:
+      type: "boolean"
+      default: true
+      description: "Whether to automatically generate test cases for tasks"
+    track_dependencies:
+      type: "boolean"
+      default: true
+      description: "Whether to track task dependencies"
+
+execution:
+  type: "shell"
+  command: "node"
+  args: ["skills/todo-task-manager/index.js"]
+  working_dir: "skills/todo-task-manager"
+
+dependencies:
+  - "node >= 16.0.0"
+
+metadata:
+  category: "task-management"
+  license: "MIT"
+  documentation: "https://example.com/todo-task-manager"

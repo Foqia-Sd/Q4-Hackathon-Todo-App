@@ -1,0 +1,16 @@
+[project]
+name = "todo-app"
+version = "0.1.0"
+description = "Phase 1 In-Memory Python Console Todo Application"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "questionary>=2.0.0",
+    "rich>=13.0.0",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-cov>=4.0.0",
+]

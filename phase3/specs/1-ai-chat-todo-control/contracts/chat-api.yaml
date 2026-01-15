@@ -1,0 +1,182 @@
+openapi: 3.0.0
+info:
+  title: Chat API for AI-Powered Todo Control
+  description: API for natural language interaction with the todo application
+  version: 1.0.0
+servers:
+  - url: http://localhost:8000/api/v1
+    description: Local development server
+  - url: https://api.todoapp.com/v1
+    description: Production server
+
+paths:
+  /chat:
+    post:
+      summary: Process natural language input and return AI response
+      description: Accepts user's natural language input, processes it through the AI agent, and returns an appropriate response. Maintains statelessness by accepting all necessary context in the request.
+      operationId: processChatInput
+      tags:
+        - chat
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChatRequest'
+      responses:
+        '200':
+          description: Successful response from the AI agent
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChatResponse'
+        '400':
+          description: Invalid input or malformed request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized - user not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Forbidden - user not authorized to access this resource
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error during AI processing
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    ChatRequest:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+          description: The user's natural language input
+          example: "Add a task to buy groceries"
+        sessionId:
+          type: string
+          description: Optional session identifier to maintain conversation context
+          example: "sess_abc123xyz"
+        includeHistory:
+          type: boolean
+          description: Whether to include recent chat history in the context
+          default: true
+        historyCount:
+          type: integer
+          description: Number of previous messages to include in context
+          default: 5
+          minimum: 1
+          maximum: 20
+
+    ChatResponse:
+      type: object
+      required:
+        - response
+        - intent
+        - taskId
+      properties:
+        response:
+          type: string
+          description: The AI-generated response to display to the user
+          example: "I've added the task 'buy groceries' to your list."
+        intent:
+          type: string
+          description: The classified intent of the user's input
+          enum: [add_task, view_tasks, complete_task, delete_task, other]
+          example: "add_task"
+        taskId:
+          type: string
+          description: ID of the affected task (if applicable)
+          example: "task_12345"
+        taskOperationResult:
+          $ref: '#/components/schemas/TaskOperationResult'
+        sessionId:
+          type: string
+          description: Session identifier for maintaining conversation context
+          example: "sess_abc123xyz"
+        suggestions:
+          type: array
+          description: Optional suggestions for follow-up actions
+          items:
+            type: string
+            example: "Would you like to set a due date for this task?"
+
+    TaskOperationResult:
+      type: object
+      properties:
+        success:
+          type: boolean
+          description: Whether the task operation was successful
+          example: true
+        message:
+          type: string
+          description: Human-readable message about the operation result
+          example: "Task created successfully"
+        task:
+          $ref: '#/components/schemas/TaskSummary'
+
+    TaskSummary:
+      type: object
+      properties:
+        id:
+          type: string
+          description: The task ID
+          example: "task_12345"
+        title:
+          type: string
+          description: The task title
+          example: "buy groceries"
+        status:
+          type: string
+          description: The task status
+          enum: [pending, completed]
+          example: "pending"
+        createdAt:
+          type: string
+          format: date-time
+          description: When the task was created
+          example: "2023-10-20T10:00:00Z"
+
+    ErrorResponse:
+      type: object
+      required:
+        - error
+        - message
+      properties:
+        error:
+          type: string
+          description: Error code
+          example: "INVALID_INPUT"
+        message:
+          type: string
+          description: Human-readable error message
+          example: "The input message is required and cannot be empty"
+        details:
+          type: object
+          description: Additional error details (optional)
+          example: {"field": "message"}
+
+tags:
+  - name: chat
+    description: Natural language processing and AI interaction endpoints

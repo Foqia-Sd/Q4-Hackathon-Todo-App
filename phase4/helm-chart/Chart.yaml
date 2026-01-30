@@ -1,0 +1,18 @@
+apiVersion: v2
+name: todo-app
+description: A Helm chart for deploying the AI-powered Todo application on Kubernetes
+type: application
+version: 0.1.0
+appVersion: "1.0"
+keywords:
+  - todo
+  - kubernetes
+  - helm
+  - ai
+maintainers:
+  - name: AI-Assisted DevOps
+    email: devops@example.com
+home: https://github.com/example/todo-app
+sources:
+  - https://github.com/example/todo-app
+dependencies: []

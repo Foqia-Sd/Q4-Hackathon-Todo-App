@@ -1,0 +1,14 @@
+apiVersion: kafka.strimzi.io/v1beta2
+kind: Kafka
+metadata:
+  name: todo-kafka
+  namespace: kafka
+spec:
+  kafka:
+    version: 4.0.1
+    metadataVersion: 3.7-IV4
+    listeners:
+      - name: plain
+        port: 9092
+        type: internal
+        tls: false

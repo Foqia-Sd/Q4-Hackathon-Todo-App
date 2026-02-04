@@ -1,0 +1,14 @@
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaNodePool
+metadata:
+  name: todo-kafka-pool
+  namespace: kafka
+  labels:
+    strimzi.io/cluster: todo-kafka
+spec:
+  replicas: 1
+  roles:
+    - controller
+    - broker
+  storage:
+    type: ephemeral

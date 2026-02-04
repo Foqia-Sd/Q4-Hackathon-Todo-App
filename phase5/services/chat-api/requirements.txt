@@ -1,0 +1,17 @@
+fastapi
+uvicorn[standard]
+pydantic[email]
+pydantic-settings
+email-validator
+sqlalchemy
+psycopg2-binary
+alembic
+python-dotenv
+httpx
+pytest
+python-multipart
+python-jose[cryptography]
+passlib[bcrypt]
+openai>=1.0.0
+dapr-ext-fastapi
+cloudevents

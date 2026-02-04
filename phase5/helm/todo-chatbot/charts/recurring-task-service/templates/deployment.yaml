@@ -1,0 +1,69 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "recurring-task-service.fullname" . }}
+  labels:
+    {{- include "recurring-task-service.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "recurring-task-service.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      annotations:
+        dapr.io/enabled: "true"
+        dapr.io/app-id: "recurring-task-service"
+        dapr.io/app-port: "{{ .Values.service.port }}"
+        dapr.io/app-protocol: "http"
+        dapr.io/log-level: "info"
+        {{- if .Values.dapr.enableMetrics }}
+        dapr.io/metrics-port: "9090"
+        {{- end }}
+        {{- if .Values.dapr.enableTracing }}
+        dapr.io/tracer: "zipkin"
+        dapr.io/tracer-endpoint: {{ .Values.dapr.tracerEndpoint | quote }}
+        {{- end }}
+      labels:
+        {{- include "recurring-task-service.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.service.port }}
+              protocol: TCP
+          env:
+            - name: SERVER_PORT
+              value: "{{ .Values.service.port }}"
+            - name: CHAT_API_URL
+              value: {{ .Values.chatApi.url | quote }}
+            - name: DAPR_HTTP_PORT
+              value: "3500"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: {{ .Values.service.port }}
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: {{ .Values.service.port }}
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

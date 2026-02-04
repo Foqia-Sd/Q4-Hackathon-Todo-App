@@ -1,0 +1,29 @@
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  name: otlp-collector
+  namespace: {{ .Release.Namespace }}
+spec:
+  type: exporters.otlp
+  version: v1
+  metadata:
+  - name: protocol
+    value: grpc
+  - name: endpointAddress
+    value: "jaeger:4317"  # Assuming Jaeger is deployed in the same namespace
+---
+apiVersion: dapr.io/v1alpha1
+kind: Configuration
+metadata:
+  name: dapr-config
+  namespace: {{ .Release.Namespace }}
+spec:
+  tracing:
+    samplingRate: "1"
+    zipkin:
+      endpointAddress: "http://jaeger:9411/api/v2/spans"
+  metric:
+    enabled: true
+  features:
+    - name: AppHealthCheck
+      enabled: true

@@ -1,0 +1,180 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://todo.example.com/schemas/task-events.schema.json",
+  "title": "TaskEvent",
+  "description": "CloudEvents schema for task lifecycle events",
+  "type": "object",
+  "required": ["specversion", "type", "source", "id", "time", "data"],
+  "properties": {
+    "specversion": {
+      "const": "1.0",
+      "description": "CloudEvents specification version"
+    },
+    "type": {
+      "type": "string",
+      "pattern": "^com\\.todo\\.task\\.(created|updated|completed|deleted)$",
+      "description": "Event type following com.todo.task.{action} pattern"
+    },
+    "source": {
+      "type": "string",
+      "format": "uri-reference",
+      "description": "Source service that generated the event",
+      "examples": ["/services/chat-api", "/services/recurring-task-service"]
+    },
+    "id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Unique event identifier"
+    },
+    "time": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp when event occurred"
+    },
+    "datacontenttype": {
+      "const": "application/json"
+    },
+    "data": {
+      "$ref": "#/$defs/taskEventData"
+    }
+  },
+  "$defs": {
+    "taskEventData": {
+      "type": "object",
+      "required": ["taskId", "userId", "action", "task", "correlationId"],
+      "properties": {
+        "taskId": {
+          "type": "string",
+          "format": "uuid",
+          "description": "ID of the affected task"
+        },
+        "userId": {
+          "type": "string",
+          "format": "uuid",
+          "description": "ID of the task owner"
+        },
+        "action": {
+          "type": "string",
+          "enum": ["CREATED", "UPDATED", "COMPLETED", "DELETED"],
+          "description": "Type of action performed"
+        },
+        "task": {
+          "$ref": "#/$defs/task",
+          "description": "Full task snapshot after the action"
+        },
+        "changes": {
+          "$ref": "#/$defs/changes",
+          "description": "Field-level diff (only present for UPDATED action)"
+        },
+        "correlationId": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Correlation ID for distributed tracing"
+        }
+      }
+    },
+    "task": {
+      "type": "object",
+      "required": ["id", "title", "completed", "createdAt", "updatedAt", "userId"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 255
+        },
+        "description": {
+          "type": ["string", "null"],
+          "maxLength": 10000
+        },
+        "completed": {
+          "type": "boolean"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "userId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "dueDate": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "priority": {
+          "type": "string",
+          "enum": ["HIGH", "MEDIUM", "LOW", "NONE"],
+          "default": "NONE"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 50
+          },
+          "maxItems": 20,
+          "default": []
+        },
+        "recurrenceRule": {
+          "type": ["string", "null"],
+          "maxLength": 255,
+          "description": "RFC 5545 RRULE string"
+        }
+      }
+    },
+    "changes": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["old", "new"],
+        "properties": {
+          "old": {
+            "description": "Previous value"
+          },
+          "new": {
+            "description": "New value"
+          }
+        }
+      },
+      "description": "Map of field names to old/new value pairs"
+    }
+  },
+  "examples": [
+    {
+      "specversion": "1.0",
+      "type": "com.todo.task.created",
+      "source": "/services/chat-api",
+      "id": "550e8400-e29b-41d4-a716-446655440000",
+      "time": "2026-01-30T12:00:00Z",
+      "datacontenttype": "application/json",
+      "data": {
+        "taskId": "550e8400-e29b-41d4-a716-446655440001",
+        "userId": "550e8400-e29b-41d4-a716-446655440002",
+        "action": "CREATED",
+        "task": {
+          "id": "550e8400-e29b-41d4-a716-446655440001",
+          "title": "Weekly report",
+          "description": "Prepare weekly status report",
+          "completed": false,
+          "createdAt": "2026-01-30T12:00:00Z",
+          "updatedAt": "2026-01-30T12:00:00Z",
+          "userId": "550e8400-e29b-41d4-a716-446655440002",
+          "dueDate": "2026-02-01T17:00:00Z",
+          "priority": "HIGH",
+          "tags": ["work", "reports"],
+          "recurrenceRule": "FREQ=WEEKLY;BYDAY=FR"
+        },
+        "correlationId": "550e8400-e29b-41d4-a716-446655440003"
+      }
+    }
+  ]
+}

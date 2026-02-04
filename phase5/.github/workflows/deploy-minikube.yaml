@@ -1,0 +1,56 @@
+name: Deploy to Minikube
+
+on:
+  workflow_dispatch:  # Manual trigger
+
+jobs:
+  deploy-to-minikube:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Start Minikube
+      uses: medyagh/setup-minikube@master
+      with:
+        minikube-version: 'latest'
+        kubernetes-version: 'v1.28.3'
+        driver: docker
+
+    - name: Install Helm
+      uses: azure/setup-helm@v3
+      with:
+        version: '3.13.0'
+
+    - name: Build and load backend image to Minikube
+      run: |
+        docker build -t todo-backend:${{ github.sha }} ./backend
+        minikube image load todo-backend:${{ github.sha }}
+
+    - name: Build and load frontend image to Minikube
+      run: |
+        docker build -t todo-frontend:${{ github.sha }} ./frontend
+        minikube image load todo-frontend:${{ github.sha }}
+
+    - name: Deploy using Helm
+      run: |
+        helm upgrade --install todo-app ./helm/todo-chatbot \
+          --namespace todo-app --create-namespace \
+          --set backend.image.repository=todo-backend \
+          --set backend.image.tag=${{ github.sha }} \
+          --set frontend.image.repository=todo-frontend \
+          --set frontend.image.tag=${{ github.sha }} \
+          --wait --timeout=10m
+
+    - name: Verify deployment
+      run: |
+        kubectl get pods -n todo-app
+        kubectl get services -n todo-app
+        sleep 30  # Wait for services to be ready
+        kubectl rollout status deployment/todo-app-backend -n todo-app --timeout=5m
+        kubectl rollout status deployment/todo-app-frontend -n todo-app --timeout=5m

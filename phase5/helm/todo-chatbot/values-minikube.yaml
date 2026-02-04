@@ -1,0 +1,97 @@
+# Values for Minikube deployment
+global:
+  imageRegistry: ""
+  imagePullSecrets: []
+  storageClass: ""
+
+# Chat API Configuration
+chat-api:
+  enabled: true
+  replicaCount: 1
+  image:
+    repository: localhost:5000/todo-chatbot/chat-api
+    pullPolicy: Always
+    tag: "latest"
+  service:
+    type: NodePort
+    port: 8000
+  ingress:
+    enabled: false
+  resources:
+    limits:
+      cpu: 200m
+      memory: 256Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+
+# Recurring Task Service Configuration
+recurring-task-service:
+  enabled: true
+  replicaCount: 1
+  image:
+    repository: localhost:5000/todo-chatbot/recurring-task-service
+    pullPolicy: Always
+    tag: "latest"
+  service:
+    type: ClusterIP
+    port: 3001
+  chatApi:
+    url: "http://chat-api:8000"
+  resources:
+    limits:
+      cpu: 100m
+      memory: 128Mi
+    requests:
+      cpu: 50m
+      memory: 64Mi
+
+# Notification Service Configuration
+notification-service:
+  enabled: true
+  replicaCount: 1
+  image:
+    repository: localhost:5000/todo-chatbot/notification-service
+    pullPolicy: Always
+    tag: "latest"
+  service:
+    type: ClusterIP
+    port: 3002
+  chatApi:
+    url: "http://chat-api:8000"
+  resources:
+    limits:
+      cpu: 100m
+      memory: 128Mi
+    requests:
+      cpu: 50m
+      memory: 64Mi
+
+# Audit Service Configuration
+audit-service:
+  enabled: true
+  replicaCount: 1
+  image:
+    repository: localhost:5000/todo-chatbot/audit-service
+    pullPolicy: Always
+    tag: "latest"
+  service:
+    type: ClusterIP
+    port: 3003
+  database:
+    host: postgresql-minikube
+    port: 5432
+    username: postgres
+    database: todo_audit
+  resources:
+    limits:
+      cpu: 100m
+      memory: 128Mi
+    requests:
+      cpu: 50m
+      memory: 64Mi
+
+# Dapr Configuration for Minikube
+dapr:
+  enabled: true
+  version: "1.12.0"

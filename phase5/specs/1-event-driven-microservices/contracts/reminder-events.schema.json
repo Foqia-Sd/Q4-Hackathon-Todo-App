@@ -1,0 +1,122 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://todo.example.com/schemas/reminder-events.schema.json",
+  "title": "ReminderEvent",
+  "description": "Schema for reminder scheduling and notification events",
+  "type": "object",
+  "required": ["specversion", "type", "source", "id", "time", "data"],
+  "properties": {
+    "specversion": {
+      "const": "1.0"
+    },
+    "type": {
+      "type": "string",
+      "pattern": "^com\\.todo\\.reminder\\.(scheduled|triggered|cancelled)$"
+    },
+    "source": {
+      "type": "string",
+      "format": "uri-reference"
+    },
+    "id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "time": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "datacontenttype": {
+      "const": "application/json"
+    },
+    "data": {
+      "$ref": "#/$defs/reminderEventData"
+    }
+  },
+  "$defs": {
+    "reminderEventData": {
+      "type": "object",
+      "required": ["reminderId", "taskId", "userId", "action"],
+      "properties": {
+        "reminderId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "taskId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "userId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "action": {
+          "type": "string",
+          "enum": ["SCHEDULED", "TRIGGERED", "CANCELLED"]
+        },
+        "triggerTime": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the reminder should/did fire"
+        },
+        "reminderOffset": {
+          "type": "string",
+          "description": "ISO 8601 duration (e.g., PT1H, P1D)"
+        },
+        "task": {
+          "$ref": "#/$defs/taskSummary",
+          "description": "Minimal task info for notification display"
+        },
+        "correlationId": {
+          "type": "string",
+          "format": "uuid"
+        }
+      }
+    },
+    "taskSummary": {
+      "type": "object",
+      "required": ["id", "title", "dueDate"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "title": {
+          "type": "string"
+        },
+        "dueDate": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "priority": {
+          "type": "string",
+          "enum": ["HIGH", "MEDIUM", "LOW", "NONE"]
+        }
+      }
+    }
+  },
+  "examples": [
+    {
+      "specversion": "1.0",
+      "type": "com.todo.reminder.triggered",
+      "source": "/services/notification-service",
+      "id": "660e8400-e29b-41d4-a716-446655440000",
+      "time": "2026-02-01T16:00:00Z",
+      "datacontenttype": "application/json",
+      "data": {
+        "reminderId": "660e8400-e29b-41d4-a716-446655440001",
+        "taskId": "550e8400-e29b-41d4-a716-446655440001",
+        "userId": "550e8400-e29b-41d4-a716-446655440002",
+        "action": "TRIGGERED",
+        "triggerTime": "2026-02-01T16:00:00Z",
+        "reminderOffset": "PT1H",
+        "task": {
+          "id": "550e8400-e29b-41d4-a716-446655440001",
+          "title": "Weekly report",
+          "dueDate": "2026-02-01T17:00:00Z",
+          "priority": "HIGH"
+        },
+        "correlationId": "770e8400-e29b-41d4-a716-446655440000"
+      }
+    }
+  ]
+}

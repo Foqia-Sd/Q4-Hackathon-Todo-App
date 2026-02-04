@@ -1,0 +1,34 @@
+# Default values for notification-service
+replicaCount: 1
+
+image:
+  repository: todo-chatbot/notification-service
+  pullPolicy: IfNotPresent
+  tag: ""
+
+service:
+  type: ClusterIP
+  port: 3002
+
+resources:
+  limits:
+    cpu: 100m
+    memory: 128Mi
+  requests:
+    cpu: 50m
+    memory: 64Mi
+
+chatApi:
+  url: "http://chat-api:8000"
+
+dapr:
+  enableMetrics: true
+  enableTracing: false
+  tracerEndpoint: "http://jaeger-collector:14268/api/traces"
+  stateStore: "statestore"
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}

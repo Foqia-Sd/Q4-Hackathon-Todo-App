@@ -1,0 +1,38 @@
+# Default values for audit-service
+replicaCount: 1
+
+image:
+  repository: todo-chatbot/audit-service
+  pullPolicy: IfNotPresent
+  tag: ""
+
+service:
+  type: ClusterIP
+  port: 3003
+
+resources:
+  limits:
+    cpu: 100m
+    memory: 128Mi
+  requests:
+    cpu: 50m
+    memory: 64Mi
+
+database:
+  host: postgresql
+  port: 5432
+  username: postgres
+  database: todo_audit
+  existingSecret: ""
+  secretKey: "db-password"
+
+dapr:
+  enableMetrics: true
+  enableTracing: false
+  tracerEndpoint: "http://jaeger-collector:14268/api/traces"
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}

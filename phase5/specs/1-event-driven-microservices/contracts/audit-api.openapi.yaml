@@ -1,0 +1,289 @@
+openapi: 3.1.0
+info:
+  title: Audit Service API
+  description: Read-only API for querying task activity history
+  version: 1.0.0
+  contact:
+    name: Todo Chatbot Team
+
+servers:
+  - url: http://audit-service.todo.svc.cluster.local:3000
+    description: Kubernetes internal service
+  - url: http://localhost:3003
+    description: Local development
+
+paths:
+  /audit/entries:
+    get:
+      summary: Query audit entries
+      description: |
+        Retrieve audit entries with optional filters. Results are paginated
+        and sorted by timestamp descending (newest first).
+      operationId: getAuditEntries
+      tags:
+        - Audit
+      parameters:
+        - name: taskId
+          in: query
+          description: Filter by task ID
+          schema:
+            type: string
+            format: uuid
+        - name: userId
+          in: query
+          description: Filter by user ID
+          schema:
+            type: string
+            format: uuid
+        - name: action
+          in: query
+          description: Filter by action type
+          schema:
+            type: string
+            enum: [CREATED, UPDATED, COMPLETED, DELETED]
+        - name: startDate
+          in: query
+          description: Filter entries from this date (inclusive)
+          schema:
+            type: string
+            format: date-time
+        - name: endDate
+          in: query
+          description: Filter entries until this date (inclusive)
+          schema:
+            type: string
+            format: date-time
+        - name: page
+          in: query
+          description: Page number (1-based)
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: pageSize
+          in: query
+          description: Number of entries per page
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 50
+      responses:
+        '200':
+          description: Paginated list of audit entries
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuditEntryPage'
+        '400':
+          description: Invalid query parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /audit/entries/{id}:
+    get:
+      summary: Get single audit entry
+      description: Retrieve a specific audit entry by ID
+      operationId: getAuditEntry
+      tags:
+        - Audit
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Audit entry ID
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Audit entry details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuditEntry'
+        '404':
+          description: Audit entry not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /audit/tasks/{taskId}/history:
+    get:
+      summary: Get task history
+      description: Retrieve complete activity history for a specific task
+      operationId: getTaskHistory
+      tags:
+        - Audit
+      parameters:
+        - name: taskId
+          in: path
+          required: true
+          description: Task ID
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: List of audit entries for the task
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  taskId:
+                    type: string
+                    format: uuid
+                  entries:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/AuditEntry'
+                  totalCount:
+                    type: integer
+        '404':
+          description: No history found for task
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /health:
+    get:
+      summary: Health check
+      description: Returns service health status
+      operationId: healthCheck
+      tags:
+        - Health
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [healthy]
+                  timestamp:
+                    type: string
+                    format: date-time
+
+components:
+  schemas:
+    AuditEntry:
+      type: object
+      required:
+        - id
+        - taskId
+        - userId
+        - action
+        - timestamp
+        - afterState
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique audit entry identifier
+        taskId:
+          type: string
+          format: uuid
+          description: ID of the affected task
+        userId:
+          type: string
+          format: uuid
+          description: ID of the task owner
+        action:
+          type: string
+          enum: [CREATED, UPDATED, COMPLETED, DELETED]
+          description: Type of action performed
+        timestamp:
+          type: string
+          format: date-time
+          description: When the action occurred
+        beforeState:
+          type: object
+          nullable: true
+          description: Task state before the action (null for CREATED)
+        afterState:
+          type: object
+          description: Task state after the action
+        metadata:
+          type: object
+          properties:
+            correlationId:
+              type: string
+              format: uuid
+            source:
+              type: string
+            actor:
+              type: string
+
+    AuditEntryPage:
+      type: object
+      required:
+        - entries
+        - pagination
+      properties:
+        entries:
+          type: array
+          items:
+            $ref: '#/components/schemas/AuditEntry'
+        pagination:
+          type: object
+          properties:
+            page:
+              type: integer
+            pageSize:
+              type: integer
+            totalEntries:
+              type: integer
+            totalPages:
+              type: integer
+            hasNext:
+              type: boolean
+            hasPrevious:
+              type: boolean
+
+    Error:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: string
+          description: Error code
+        message:
+          type: string
+          description: Human-readable error message
+        details:
+          type: object
+          description: Additional error context
+
+tags:
+  - name: Audit
+    description: Audit log query operations
+  - name: Health
+    description: Service health endpoints
